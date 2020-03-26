@@ -17,12 +17,7 @@ namespace DecCOVID
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            using (StreamWriter outputFile = File.AppendText(Server.MapPath("/") + "rec.txt"))
-            {
-                string clientIp = (Request.ServerVariables["HTTP_X_FORWARDED_FOR"] ??
-                    Request.ServerVariables["REMOTE_ADDR"]).Split(',')[0].Trim();
-                outputFile.WriteLine(clientIp);
-            }
+           
         }
 
         protected void btnGenerare_Click(object sender, EventArgs e)
@@ -60,11 +55,7 @@ namespace DecCOVID
 
         private void FillForm(string pdfTemplate, DeclaratiePersonala date)
         {
-            using (StreamWriter outputFile = File.AppendText(Server.MapPath("/") + "rec.txt"))
-            {
-                outputFile.WriteLine(date.nume);
-            }
-            string newFile = Server.MapPath("/") + "/formDeclaratieNoua.pdf";
+
             PdfReader pdfReader = new PdfReader(pdfTemplate);
             MemoryStream outStream = new MemoryStream();
 
