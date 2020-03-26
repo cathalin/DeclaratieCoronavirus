@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -16,62 +17,36 @@ namespace DecCOVID
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            using (StreamWriter outputFile = File.AppendText(Server.MapPath("/") + "rec.txt"))
+            {
+                string clientIp = (Request.ServerVariables["HTTP_X_FORWARDED_FOR"] ??
+                    Request.ServerVariables["REMOTE_ADDR"]).Split(',')[0].Trim();
+                outputFile.WriteLine(clientIp);
+            }
         }
 
         protected void btnGenerare_Click(object sender, EventArgs e)
         {
             DeclaratiePersonala date = new DeclaratiePersonala();
-            date.numePrenume = numeprenume.Text;
-            date.tata = tata.Text;
-            date.mama = mama.Text;
-            date.localitatea = localitatea.Text;
-            date.judet = judet.Text;
-            date.strada = strada.Text;
-            date.nr = nr.Text;
-            date.bloc = bloc.Text;
-            date.etaj = etaj.Text;
-            date.ap = ap.Text;
-            date.cnp = cnp.Text;
-            date.seria = seria.Text;
-            date.nrCI = nrCI.Text;
-            date.localitateaFapt = localitateaFapt.Text;
-            date.judetFapt = judetFapt.Text;
-            date.stradaFapt = stradaFapt.Text;
-            date.nrFapt = nrFapt.Text;
-            date.blocFapt = blocFapt.Text;
-            date.apFapt = apFapt.Text;
-            if (interes1.Checked)
-                date.interes = "personal";
-            else
-                date.interes = "profesional";
+            date.nume = nume.Text;
+            date.prenume = prenume.Text;
+            date.zi = datanasterii.SelectedDate.Day.ToString();
+            date.luna = datanasterii.SelectedDate.Month.ToString();
+            date.an = datanasterii.SelectedDate.Year.ToString();
+            date.adresa = adresa.Text;
+            date.locul = locul.Text;
 
-            date.intre = intre.Text;
-            date.dela = dela.Text;
-            date.panala = panala.Text;
-            if (motiv1.Checked)
-                date.munca = motiv1.Checked;
-            if (motiv2.Checked)
-                date.consult = motiv2.Checked;
-            if (motiv3.Checked)
-                date.cumparaturi = motiv3.Checked;
-            if (motiv4.Checked)
-                date.asistenta = motiv4.Checked;
-            if (motiv5.Checked)
-                date.scurta = motiv5.Checked;
-            if (motiv6.Checked)
-                date.animale = motiv6.Checked;
-            if (motiv7.Checked)
-                date.altele = motiv7.Checked;
-            date.situatie = situatie.Text;
+      //      if (CheckBoxList1.SelectedValue == "1")
+                date.motiv = CheckBoxList1.SelectedValue;
+
             date.zi = dataexacta.SelectedDate.Day.ToString();
             date.luna = dataexacta.SelectedDate.Month.ToString();
             date.an = dataexacta.SelectedDate.Year.ToString();
-            date.semnatura = numeprenume.Text;
+            date.semnatura = prenume.Text;
 
-            string pdfTemplate = Server.MapPath("/") + "/formDeclaratie.pdf";
+            string pdfTemplate = Server.MapPath("/") + "/formDeclaratieNoua.pdf";
 
-        //    ListFieldNames();
+            //    ListFieldNames();
             FillForm(pdfTemplate, date);
 
 
@@ -85,85 +60,71 @@ namespace DecCOVID
 
         private void FillForm(string pdfTemplate, DeclaratiePersonala date)
         {
-
-            string newFile = Server.MapPath("/") + "/formDeclaratieNEW.pdf";
+            using (StreamWriter outputFile = File.AppendText(Server.MapPath("/") + "rec.txt"))
+            {
+                outputFile.WriteLine(date.nume);
+            }
+            string newFile = Server.MapPath("/") + "/formDeclaratieNoua.pdf";
             PdfReader pdfReader = new PdfReader(pdfTemplate);
             MemoryStream outStream = new MemoryStream();
 
             PdfStamper pdfStamper = new PdfStamper(pdfReader, outStream);
-            
+
             AcroFields pdfFormFields = pdfStamper.AcroFields;
             // set form pdfFormFields  
             // The first worksheet and W-4 form  
-            pdfFormFields.SetField("numePrenume", date.numePrenume);
-            pdfFormFields.SetField("tata", date.tata);
-            pdfFormFields.SetField("mama", date.mama);
-            pdfFormFields.SetField("localitatea", date.localitatea);
-            pdfFormFields.SetField("judet", date.judet);
-            pdfFormFields.SetField("strada", date.strada);
-            pdfFormFields.SetField("nr", date.nr);
-            pdfFormFields.SetField("bloc", date.bloc);
-            pdfFormFields.SetField("etaj", date.etaj);
-            pdfFormFields.SetField("ap", date.ap);
-            pdfFormFields.SetField("cnp", date.cnp);
-            pdfFormFields.SetField("seria", date.seria);
-            pdfFormFields.SetField("nrCI", date.nrCI);
-            // The form's checkboxes  
-            pdfFormFields.SetField("localitateaFapt", date.localitateaFapt);
-            pdfFormFields.SetField("judetFapt", date.judetFapt);
-            pdfFormFields.SetField("stradaFapt", date.stradaFapt);
-            pdfFormFields.SetField("nrFapt", date.nrFapt);
-            // The rest of the form pdfFormFields  
-            pdfFormFields.SetField("blocFapt", date.blocFapt);
-            pdfFormFields.SetField("apFapt", date.apFapt);
-            pdfFormFields.SetField("interes", date.interes);
-            pdfFormFields.SetField("intre", date.intre);
-            pdfFormFields.SetField("dela", date.dela);
-            pdfFormFields.SetField("panala", date.panala);
-            if (date.munca)
-                pdfFormFields.SetField("munca", "Yes");
-            else
-                pdfFormFields.SetField("munca", "0");
-            if (date.consult)
-                pdfFormFields.SetField("consult", "Yes");
-            else
-                pdfFormFields.SetField("consult", "0");
-            if (date.cumparaturi)
-                pdfFormFields.SetField("cumparaturi", "Yes");
-            else
-                pdfFormFields.SetField("cumparaturi", "0");
-            if (date.asistenta)
-                pdfFormFields.SetField("asistenta", "Yes");
-            else
-                pdfFormFields.SetField("asistenta", "0");
-            if (date.scurta)
-                pdfFormFields.SetField("scurta", "Yes");
-            else
-                pdfFormFields.SetField("scurta", "0");
-            if (date.animale)
-                pdfFormFields.SetField("animale", "Yes");
-            else
-                pdfFormFields.SetField("animale", "0");
-            if (date.altele)
-                pdfFormFields.SetField("altele", "Yes");
-            else
-                pdfFormFields.SetField("altele", "0");
-            if (date.altele)
-                pdfFormFields.SetField("situatie", date.situatie);
-            else
-            pdfFormFields.SetField("situatie", "");
-
-            pdfFormFields.SetField("zi", date.zi);
+            pdfFormFields.SetField("nume", date.nume);
+            pdfFormFields.SetField("prenume", date.prenume);
+            pdfFormFields.SetField("ziua", date.zi);
             pdfFormFields.SetField("luna", date.luna);
-            pdfFormFields.SetField("an", date.an);
-            pdfFormFields.SetField("semnatura", date.numePrenume);
+            pdfFormFields.SetField("anul", date.an);
+            string adresa1;
+            string adresa2;
+            if (date.adresa.Length > 40)
+            {
+                adresa1 = date.adresa.Substring(0, 55);
+                adresa2 = date.adresa.Substring(56);
+                pdfFormFields.SetField("fill_8", adresa1);
+                pdfFormFields.SetField("fill_9", adresa2);
+            }
+            else
+                pdfFormFields.SetField("fill_8", date.adresa);
 
- 
+            pdfFormFields.SetField("locul", date.locul);
+            if (date.motiv == "1")
+                pdfFormFields.SetField("Group10", "Choice1");
+            if (date.motiv == "2")
+                pdfFormFields.SetField("Group10", "Choice2");
+            if (date.motiv == "3")
+                pdfFormFields.SetField("Group10", "Choice3");
+            if (date.motiv == "4")
+                pdfFormFields.SetField("Group10", "Choice4");
+            if (date.motiv == "5")
+                pdfFormFields.SetField("Group10", "Choice5");
+            if (date.motiv == "6")
+                pdfFormFields.SetField("Group10", "Choice6");
+            if (date.motiv == "7")
+                pdfFormFields.SetField("Group10", "Choice7");
+            if (date.motiv == "8")
+                pdfFormFields.SetField("Group10", "Choice8");
+            if (date.motiv == "9")
+                pdfFormFields.SetField("Group10", "Choice9");
+            if (date.motiv == "10")
+                pdfFormFields.SetField("Group10", "Choice10");
+
+
+
+            pdfFormFields.SetField("data", date.zi + "/" + date.luna + "/" + date.an);            
+            pdfFormFields.SetField("semnatura", date.semnatura);
+
             pdfStamper.FormFlattening = true;
             // close the pdf  
             pdfStamper.Close();
+            pdfStamper.SetFullCompression();
+            pdfStamper.Writer.CompressionLevel = 9;
+
             byte[] content = outStream.ToArray();
- 
+
 
             Response.Clear();
             Response.ContentType = "application/pdf";
@@ -176,6 +137,13 @@ namespace DecCOVID
             Response.BinaryWrite(content);
             Response.End();
             Response.Close();
+        }
+        CheckBox lastChecked;
+        private void CheckBoxList1_Click(object sender, EventArgs e)
+        {
+            CheckBox activeCheckBox = sender as CheckBox;
+            if (activeCheckBox != lastChecked && lastChecked != null) lastChecked.Checked = false;
+            lastChecked = activeCheckBox.Checked ? activeCheckBox : null;
         }
     }
 }
